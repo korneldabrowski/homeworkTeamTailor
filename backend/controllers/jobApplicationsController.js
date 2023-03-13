@@ -1,62 +1,52 @@
-const { getCandidatesData } = require("../helpers/apiHelper");
-
+const { getJobApplications } = require("../API/services/jobApplicationService");
 const {
   hasCachedData,
   getCachedData,
   storeData,
-  clearCache,
-} = require("../helpers/cacheHelper");
+} = require("../middlewares/cacheMiddleware");
 
-const csvHelper = require("../helpers/csvHelper");
+const { writeCsv } = require("../helpers/csvHelper");
 
-const jobApplicationsController = {
-  async getData(req, res) {
-    try {
-      if (!hasCachedData()) {
-        const candidatesWithApplications = await getCandidatesData();
-        storeData(candidatesWithApplications);
-      }
-
-      return res.status(200).send(getCachedData());
-    } catch (error) {
-      console.log(error);
-      res.status(500).send(`Internal server error ${error}`);
+async function getJobApplicationsController(req, res, next) {
+  try {
+    if (!hasCachedData()) {
+      const jobApplications = await getJobApplications();
+      storeData(cacheKey, jobApplications);
     }
-  },
 
-  async downloadData(req, res) {
-    try {
-      if (!hasCachedData()) {
-        const candidatesWithApplications = await getCandidatesData();
-        storeData(candidatesWithApplications);
-      }
+    return res.json(getCachedData);
+  } catch (error) {
+    next(error);
+  }
+}
 
-      await csvHelper.writeCsv(
-        "candidates.csv",
-        [
-          { id: "candidate_id", title: "Candidate ID" },
-          { id: "first_name", title: "First Name" },
-          { id: "last_name", title: "Last Name" },
-          { id: "email", title: "Email" },
-          { id: "job_application_id", title: "Job Application ID" },
-          {
-            id: "job_application_created_at",
-            title: "Job Application Created At",
-          },
-        ],
-        getCachedData()
-      );
-      res.download("candidates.csv");
-    } catch (error) {
-      console.log(error);
-      res.status(500).send("Internal server error");
-    }
-  },
+async function downloadDataController(req, res, next) {
+  try {
+    const candidatesData = await getCandidatesData();
 
-  clearCache(req, res) {
-    clearCache();
-    res.status(200).send("Cache cleared");
-  },
-};
+    // Set the headers to force download as a CSV file
+    res.setHeader("Content-Type", "text/csv");
+    res.setHeader("Content-Disposition", "attachment; filename=data.csv");
 
-module.exports = jobApplicationsController;
+    // Write the CSV data to the response
+    await writeCsv(
+      "data.csv",
+      [
+        { id: "candidate_id", title: "Candidate ID" },
+        { id: "first_name", title: "First Name" },
+        { id: "last_name", title: "Last Name" },
+        { id: "email", title: "Email" },
+        { id: "job_application_id", title: "Job Application ID" },
+        {
+          id: "job_application_created_at",
+          title: "Job Application Created At",
+        },
+      ],
+      candidatesData
+    ).pipe(res);
+  } catch (error) {
+    next(error);
+  }
+}
+
+module.exports = { getJobApplicationsController, downloadDataController };
