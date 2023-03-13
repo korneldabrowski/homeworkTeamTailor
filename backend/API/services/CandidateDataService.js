@@ -1,13 +1,15 @@
-const { getJobApplications } = require("./getJobApplications");
-const { getCandidate } = require("../getCandidate");
+const { getJobApplications } = require("./JobApplicationService");
+const { getCandidate } = require("./CandidateService");
 
 async function getCandidatesData() {
   const jobApplications = await getJobApplications();
+
   const candidatesData = [];
   for (const application of jobApplications) {
-    const candidate = await getCandidate(
-      application.relationships.candidate.links.related
-    );
+    const candidateId = application.relationships.candidate.links.related;
+
+    const candidate = await getCandidate(candidateId);
+
     const data = {
       candidate_id: candidate.data.id,
       first_name: candidate.data.attributes["first-name"],
