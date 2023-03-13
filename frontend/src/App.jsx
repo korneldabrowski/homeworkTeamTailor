@@ -30,7 +30,7 @@ function App() {
   };
 
   return (
-    <div className="   w-screen h-screen bg-[conic-gradient(at_top_right,_var(--tw-gradient-stops))] from-gray-700 via-gray-900 to-black">
+    <div className=" bg-[conic-gradient(at_top_right,_var(--tw-gradient-stops))] from-gray-700 via-gray-900 to-black">
       <div className="justify-center mx-auto">
         <h1 className="text-white text-4xl font-bold underline text-center pt-36">
           Welcome to Team Tailor!
