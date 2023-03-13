@@ -1,10 +1,12 @@
 const express = require("express");
 const router = express.Router();
 
-const jobApplicationsController = require("../controllers/jobApplicationsController");
+const {
+  getJobApplicationsController,
+  downloadDataController,
+} = require("../controllers/jobApplicationsController");
 
-router.get("/data", jobApplicationsController.getData);
-router.get("/download", jobApplicationsController.downloadData);
-router.get("/clear-cache", jobApplicationsController.clearCache);
+router.get("/data", getJobApplicationsController);
+router.get("/download", downloadDataController);
 
 module.exports = router;
