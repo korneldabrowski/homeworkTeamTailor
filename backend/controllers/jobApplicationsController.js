@@ -12,13 +12,12 @@ const csvHelper = require("../helpers/csvHelper");
 const jobApplicationsController = {
   async getData(req, res) {
     try {
-      if (hasCachedData()) {
-        return res.status(200).send(getCachedData());
+      if (!hasCachedData()) {
+        const candidatesWithApplications = await getCandidatesData();
+        storeData(candidatesWithApplications);
       }
 
-      const candidatesWithApplications = await getCandidatesData();
-      storeData(candidatesWithApplications);
-      return res.status(200).send(candidatesWithApplications);
+      return res.status(200).send(getCachedData());
     } catch (error) {
       console.log(error);
       res.status(500).send(`Internal server error ${error}`);
