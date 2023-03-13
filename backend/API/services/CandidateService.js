@@ -1,18 +1,19 @@
 const httpClient = require("../httpClient");
-const dotenv = require("dotenv");
-
-dotenv.config();
-
-const { BEARER_TOKEN, API_VERSION } = process.env;
+const { getHeaders } = require("../getHeaders");
 
 async function getCandidate(url) {
-  const response = await httpClient.get(url, {
-    headers: {
-      Authorization: `Bearer ${BEARER_TOKEN}`,
-      "x-api-version": API_VERSION,
-    },
-  });
-  return response;
+  try {
+    const endpoint = url;
+
+    const headers = getHeaders();
+
+    const response = await httpClient.get("", endpoint, { headers });
+
+    return response;
+  } catch (error) {
+    console.error("Error in CandidateService():", error);
+    throw error;
+  }
 }
 
 module.exports = {

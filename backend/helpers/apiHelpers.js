@@ -3,14 +3,13 @@ const fetch = require("node-fetch");
 async function apiRequest(
   apiUrl,
   path,
-  { method = "GET", data = null, headers = {}, queryParams = {} } = {}
+  { method, data, headers, queryParams }
 ) {
   const url = new URL(`${apiUrl}${path}`);
 
   Object.entries(queryParams).forEach(([key, value]) => {
     url.searchParams.set(key, value);
   });
-  console.log(headers);
 
   const options = {
     method,
@@ -22,16 +21,13 @@ async function apiRequest(
   };
 
   const response = await fetch(url, options);
-  // console.log("xd ", response);
-
   const responseData = await response.json();
-  // console.log("xd2 ", responseData);
 
   if (!response.ok) {
     const error = new Error(
-      `API request failed with status ${response.status}`
+      `API request failed with status ${response.status}: ${responseData.error}`
     );
-    error.response = responseData;
+    error.response = response;
     throw error;
   }
 

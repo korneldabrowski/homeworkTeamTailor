@@ -1,36 +1,35 @@
-const { getJobApplications } = require("../API/services/jobApplicationService");
 const {
   hasCachedData,
   getCachedData,
   storeData,
 } = require("../middlewares/cacheMiddleware");
 
+const { getCandidatesData } = require("../API/services/CandidateDataService");
+
 const { writeCsv } = require("../helpers/csvHelper");
 
 async function getJobApplicationsController(req, res, next) {
   try {
     if (!hasCachedData()) {
-      const jobApplications = await getJobApplications();
-      storeData(cacheKey, jobApplications);
+      const jobApplications = await getCandidatesData();
+      storeData(jobApplications);
     }
 
-    return res.json(getCachedData);
+    return res.status(200).send(getCachedData());
   } catch (error) {
-    next(error);
+    return res.status(500).json({ message: error.message });
   }
 }
 
-async function downloadDataController(req, res, next) {
+async function downloadDataController(req, res) {
   try {
-    const candidatesData = await getCandidatesData();
+    if (!hasCachedData()) {
+      const candidatesWithApplications = await getCandidatesData();
+      storeData(candidatesWithApplications);
+    }
 
-    // Set the headers to force download as a CSV file
-    res.setHeader("Content-Type", "text/csv");
-    res.setHeader("Content-Disposition", "attachment; filename=data.csv");
-
-    // Write the CSV data to the response
     await writeCsv(
-      "data.csv",
+      "candidates.csv",
       [
         { id: "candidate_id", title: "Candidate ID" },
         { id: "first_name", title: "First Name" },
@@ -42,10 +41,12 @@ async function downloadDataController(req, res, next) {
           title: "Job Application Created At",
         },
       ],
-      candidatesData
-    ).pipe(res);
+      getCachedData()
+    );
+    res.download("candidates.csv");
   } catch (error) {
-    next(error);
+    console.log(error);
+    res.status(500).send("Internal server error");
   }
 }
 

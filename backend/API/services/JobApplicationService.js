@@ -1,18 +1,21 @@
 const httpClient = require("../httpClient");
-const dotenv = require("dotenv");
+const { getHeaders } = require("../getHeaders");
 
-dotenv.config();
-
-const { BEARER_TOKEN, API_VERSION } = process.env;
+const apiUrl = "https://api.teamtailor.com/v1";
 
 async function getJobApplications() {
-  const response = await httpClient.get("/job-applications", {
-    headers: {
-      Authorization: `Bearer ${BEARER_TOKEN}`,
-      "x-api-version": API_VERSION,
-    },
-  });
-  return response.data;
+  try {
+    const endpoint = "/job-applications";
+
+    const headers = getHeaders();
+
+    const response = await httpClient.get(apiUrl, endpoint, { headers });
+
+    return response.data;
+  } catch (error) {
+    console.error("Error in getJobApplications():", error);
+    throw error;
+  }
 }
 
 module.exports = {
